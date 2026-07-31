@@ -1,4 +1,5 @@
 #include "InputManager.hpp"
+#include "../../config/ConfigManager.hpp"
 #include "../../desktop/view/Window.hpp"
 #include "../../protocols/Tablet.hpp"
 #include "../../devices/Tablet.hpp"
@@ -7,6 +8,10 @@
 #include "../../protocols/PointerConstraints.hpp"
 #include "../../protocols/core/DataDevice.hpp"
 #include "../../event/EventBus.hpp"
+
+static bool isTabletEnabled(const SP<CTablet>& tablet) {
+    return Config::mgr()->getDeviceInt(tablet->m_hlName, "enabled", "input:tablet:enabled") != 0;
+}
 
 static void unfocusTool(SP<CTabletTool> tool) {
     if (!tool->getSurface())
@@ -107,6 +112,8 @@ static Vector2D transformToActiveRegion(const Vector2D pos, const CBox activeAre
 }
 
 void CInputManager::onTabletAxis(CTablet::SAxisEvent e) {
+    if (!isTabletEnabled(e.tablet))
+        return;
     Event::SCallbackInfo info;
     Event::bus()->m_events.input.tablet.axis.emit(e, info);
     if (info.cancelled)
@@ -176,12 +183,14 @@ void CInputManager::onTabletAxis(CTablet::SAxisEvent e) {
 }
 
 void CInputManager::onTabletTip(CTablet::STipEvent e) {
+    const auto PTAB = e.tablet;
+    if (!isTabletEnabled(PTAB))
+        return;
     Event::SCallbackInfo info;
     Event::bus()->m_events.input.tablet.tip.emit(e, info);
     if (info.cancelled)
         return;
 
-    const auto PTAB  = e.tablet;
     const auto PTOOL = ensureTabletToolPresent(e.tool);
     const auto POS   = e.tip;
 
@@ -204,6 +213,9 @@ void CInputManager::onTabletTip(CTablet::STipEvent e) {
 }
 
 void CInputManager::onTabletButton(CTablet::SButtonEvent e) {
+    const auto PTAB = e.tablet;
+    if (!isTabletEnabled(PTAB))
+        return;
     Event::SCallbackInfo info;
     Event::bus()->m_events.input.tablet.button.emit(e, info);
     if (info.cancelled)
@@ -223,12 +235,15 @@ void CInputManager::onTabletButton(CTablet::SButtonEvent e) {
 }
 
 void CInputManager::onTabletProximity(CTablet::SProximityEvent e) {
+    const auto PTAB = e.tablet;
+    if (!isTabletEnabled(PTAB))
+        return;
+
     Event::SCallbackInfo info;
     Event::bus()->m_events.input.tablet.proximity.emit(e, info);
     if (info.cancelled)
         return;
 
-    const auto PTAB  = e.tablet;
     const auto PTOOL = ensureTabletToolPresent(e.tool);
 
     PTOOL->m_active = e.in;
