@@ -12,6 +12,9 @@
 static bool isTabletEnabled(const SP<CTablet>& tablet) {
     return Config::mgr()->getDeviceInt(tablet->m_hlName, "enabled", "input:tablet:enabled") != 0;
 }
+static bool isTabletPadEnabled(const SP<CTabletPad>& pad) {
+    return Config::mgr()->getDeviceInt(pad->m_hlName, "enabled", "input:tablet:enabled") != 0;
+}
 
 static void unfocusTool(SP<CTabletTool> tool) {
     if (!tool->getSurface())
@@ -322,6 +325,8 @@ void CInputManager::newTabletPad(SP<Aquamarine::ITabletPad> pDevice) {
 
     PNEWPAD->m_padEvents.button.listenStatic([pad = PNEWPAD.get()](const CTabletPad::SButtonEvent& event) {
         const auto PPAD = pad->m_self.lock();
+        if (!isTabletPadEnabled(PPAD))
+            return;
 
         PROTO::tablet->mode(PPAD, 0, event.mode, event.timeMs);
         PROTO::tablet->buttonPad(PPAD, event.button, event.timeMs, event.down);
@@ -329,11 +334,17 @@ void CInputManager::newTabletPad(SP<Aquamarine::ITabletPad> pDevice) {
 
     PNEWPAD->m_padEvents.strip.listenStatic([pad = PNEWPAD.get()](const CTabletPad::SStripEvent& event) {
         const auto PPAD = pad->m_self.lock();
+        if (!isTabletPadEnabled(PPAD))
+            return;
+
         PROTO::tablet->strip(PPAD, event.strip, event.position, event.finger, event.timeMs);
     });
 
     PNEWPAD->m_padEvents.ring.listenStatic([pad = PNEWPAD.get()](const CTabletPad::SRingEvent& event) {
         const auto PPAD = pad->m_self.lock();
+        if (!isTabletPadEnabled(PPAD))
+            return;
+
         PROTO::tablet->ring(PPAD, event.ring, event.position, event.finger, event.timeMs);
     });
 
