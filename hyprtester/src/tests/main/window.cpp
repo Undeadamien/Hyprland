@@ -544,6 +544,53 @@ TEST_CASE(pinnedWorkspacesValid) {
     }
 }
 
+TEST_CASE(alwaysOnTopFloatingWindow) {
+    SPAWN_KITTY("kitty");
+
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kitty' })"));
+
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'set', window = 'class:kitty' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
+    }
+
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'toggle', window = 'class:kitty' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 0"), true);
+    }
+
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'unset', window = 'class:kitty' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 0"), true);
+    }
+}
+
+TEST_CASE(alwaysOnTopWindowRule) {
+    OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_A' }, float = true, always_on_top = true })"));
+
+    SPAWN_KITTY("kitty_A");
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
+    }
+
+    OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_B' }, float = true, always_on_top = false })"));
+
+    SPAWN_KITTY("kitty_B");
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 0"), true);
+    }
+}
+
 TEST_CASE(windowruleWorkspaceEmpty) {
     OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_A' }, workspace = 'empty' })"));
     OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_B' }, workspace = 'emptyn' })"));

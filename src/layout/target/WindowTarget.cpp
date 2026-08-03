@@ -288,8 +288,9 @@ void CWindowTarget::setFloating(bool x) {
 
     m_window->m_layoutFlags = {};
 
-    m_window->m_isFloating = x;
-    m_window->m_pinned     = false;
+    m_window->m_isFloating  = x;
+    m_window->m_pinned      = false;
+    m_window->m_alwaysOnTop = false;
 
     m_window->m_ruleApplicator->propertiesChanged(Desktop::Rule::RULE_PROP_FLOATING);
 }

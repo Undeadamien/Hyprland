@@ -953,7 +953,7 @@ bool CWindow::isAllowedOverFullscreen() const {
     if (!m_workspace)
         return false;
 
-    if (m_self == Fullscreen::controller()->getFullscreenWindow(m_workspace, true) || m_pinned || m_alwaysOnTop || m_allowedOverFullscreen)
+    if (m_self == Fullscreen::controller()->getFullscreenWindow(m_workspace, true) || m_pinned || m_allowedOverFullscreen)
         return true;
 
     const auto FSWINDOW = Fullscreen::controller()->getFullscreenWindow(m_workspace);
@@ -2290,6 +2290,10 @@ void CWindow::mapWindow() {
     // disallow tiled pinned
     if (m_pinned && !m_isFloating)
         m_pinned = false;
+
+    // disallow tiled always on top
+    if (m_alwaysOnTop && !m_isFloating)
+        m_alwaysOnTop = false;
 
     CVarList2 WORKSPACEARGS = CVarList2(std::move(requestedWorkspace), 0, ' ', false, false);
 

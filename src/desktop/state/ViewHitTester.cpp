@@ -75,8 +75,8 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
             if (ONLY_PRIORITY && !w->priorityFocus())
                 continue;
 
-            if (w->m_isFloating && w->m_isMapped && w->acceptsInput() && !w->m_X11ShouldntFocus && w->m_alwaysOnTop && !w->m_ruleApplicator->noFocus().valueOrDefault() &&
-                w != ignoreWindow && !isShadowedByModal(w)) {
+            if (w->m_isFloating && w->m_isMapped && w->m_workspace && w->m_workspace->isVisible() && w->acceptsInput() && !w->m_X11ShouldntFocus && w->m_alwaysOnTop &&
+                !w->m_ruleApplicator->noFocus().valueOrDefault() && w != ignoreWindow && !isShadowedByModal(w)) {
                 const auto BB  = w->getWindowBoxUnified(properties);
                 CBox       box = BB.copy().expand(!w->isX11OverrideRedirect() ? BORDER_GRAB_AREA : 0);
                 if (HITBOX_SHRINK > 0 && w != LASTFOCUSED)
