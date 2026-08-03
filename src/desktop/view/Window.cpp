@@ -2291,10 +2291,6 @@ void CWindow::mapWindow() {
     if (m_pinned && !m_isFloating)
         m_pinned = false;
 
-    // disallow tiled always on top
-    if (m_alwaysOnTop && !m_isFloating)
-        m_alwaysOnTop = false;
-
     CVarList2 WORKSPACEARGS = CVarList2(std::move(requestedWorkspace), 0, ' ', false, false);
 
     if (!WORKSPACEARGS[0].empty()) {

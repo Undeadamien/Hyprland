@@ -549,7 +549,7 @@ TEST_CASE(alwaysOnTopFloatingWindow) {
 
     OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kitty' })"));
 
-    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'set', window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'enable', window = 'class:kitty' })"));
 
     {
         auto str = getFromSocket("/activewindow");
@@ -563,7 +563,7 @@ TEST_CASE(alwaysOnTopFloatingWindow) {
         EXPECT(str.contains("alwaysOnTop: 0"), true);
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'unset', window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'disable', window = 'class:kitty' })"));
 
     {
         auto str = getFromSocket("/activewindow");
@@ -588,6 +588,31 @@ TEST_CASE(alwaysOnTopWindowRule) {
     {
         auto str = getFromSocket("/activewindow");
         EXPECT(str.contains("alwaysOnTop: 0"), true);
+    }
+}
+
+TEST_CASE(alwaysOnTopRulePersistsOnFloat) {
+    OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_A' }, always_on_top = true })"));
+
+    SPAWN_KITTY("kitty_A");
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
+    }
+
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kitty_A' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
+    }
+
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'unset', window = 'class:kitty_A' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
     }
 }
 
