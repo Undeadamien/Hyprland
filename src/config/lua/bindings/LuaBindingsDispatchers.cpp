@@ -642,6 +642,10 @@ static int dsp_pinWindow(lua_State* L) {
     return Internal::checkResult(L, CA::pinWindow(sc<CA::eTogglableAction>((int)lua_tonumber(L, lua_upvalueindex(1))), Internal::windowFromUpval(L, 2)));
 }
 
+static int dsp_alwaysOnTopWindow(lua_State* L) {
+    return Internal::checkResult(L, CA::alwaysOnTopWindow(sc<CA::eTogglableAction>((int)lua_tonumber(L, lua_upvalueindex(1))), Internal::windowFromUpval(L, 2)));
+}
+
 static int dsp_bringToTop(lua_State* L) {
     return Internal::checkResult(L, CA::alterZOrder("top"));
 }
@@ -1023,6 +1027,15 @@ static int hlWindowPin(lua_State* L) {
     return 1;
 }
 
+static int hlWindowAlwaysOnTop(lua_State* L) {
+    const auto action = Internal::tableToggleAction(L, 1);
+
+    lua_pushnumber(L, (int)action);
+    Internal::pushWindowUpval(L, 1);
+    lua_pushcclosure(L, dsp_alwaysOnTopWindow, 2);
+    return 1;
+}
+
 static int hlWindowBringToTop(lua_State* L) {
     lua_pushcclosure(L, dsp_bringToTop, 0);
     return 1;
@@ -1375,6 +1388,7 @@ void Internal::registerDispatcherBindings(lua_State* L) {
         Internal::setFn(L, "clear_tags", hlWindowClearTags);
         Internal::setFn(L, "toggle_swallow", hlWindowToggleSwallow);
         Internal::setFn(L, "pin", hlWindowPin);
+        Internal::setFn(L, "always_on_top", hlWindowAlwaysOnTop);
         Internal::setFn(L, "bring_to_top", hlWindowBringToTop);
         Internal::setFn(L, "alter_zorder", hlWindowAlterZOrder);
         Internal::setFn(L, "set_prop", hlWindowSetProp);

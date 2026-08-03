@@ -33,6 +33,7 @@ constexpr auto MATCH_PROP_STRINGS =
         {RULE_PROP_XWAYLAND, "xwayland"},                                  //
         {RULE_PROP_FULLSCREEN, "fullscreen"},                              //
         {RULE_PROP_PINNED, "pin"},                                         //
+        {RULE_PROP_ALWAYS_ON_TOP, "always_on_top"},                        //
         {RULE_PROP_FOCUS, "focus"},                                        //
         {RULE_PROP_GROUP, "group"},                                        //
         {RULE_PROP_MODAL, "modal"},                                        //
@@ -58,6 +59,7 @@ constexpr auto RULE_ENGINES =
         {RULE_PROP_XWAYLAND, RULE_MATCH_ENGINE_BOOL},                //
         {RULE_PROP_FULLSCREEN, RULE_MATCH_ENGINE_BOOL},              //
         {RULE_PROP_PINNED, RULE_MATCH_ENGINE_BOOL},                  //
+        {RULE_PROP_ALWAYS_ON_TOP, RULE_MATCH_ENGINE_BOOL},           //
         {RULE_PROP_FOCUS, RULE_MATCH_ENGINE_BOOL},                   //
         {RULE_PROP_GROUP, RULE_MATCH_ENGINE_BOOL},                   //
         {RULE_PROP_MODAL, RULE_MATCH_ENGINE_BOOL},                   //

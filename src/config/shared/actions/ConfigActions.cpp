@@ -31,6 +31,7 @@
 #include "../../../state/MonitorState.hpp"
 #include "../../../state/WorkspacePlacementController.hpp"
 #include "../../../state/WorkspaceState.hpp"
+#include "desktop/rule/Rule.hpp"
 
 #include <numbers>
 #include <utility>
@@ -264,6 +265,53 @@ ActionResult Actions::pinWindow(eTogglableAction action, std::optional<PHLWINDOW
 
     IPC::Socket2::sock()->postEvent({.event = "pin", .data = std::format("{:x},{}", rc<uintptr_t>(window.get()), sc<int>(window->m_pinned))});
     Event::bus()->m_events.window.pin.emit(window);
+
+    g_pHyprRenderer->damageWindow(window, true);
+
+    return {};
+}
+
+ActionResult Actions::alwaysOnTopWindow(eTogglableAction action, std::optional<PHLWINDOW> w) {
+    auto window = xtract(w);
+    if (!window)
+        return {};
+
+    if (!window->m_isFloating || Fullscreen::controller()->isFullscreen(window))
+        return actionError("Window does not qualify to be always on top", eActionErrorLevel::WARNING, eActionErrorCode::INVALID_STATE);
+
+    bool wantAlwaysOnTop = false;
+    switch (action) {
+        case TOGGLE_ACTION_TOGGLE: wantAlwaysOnTop = !window->m_alwaysOnTop; break;
+        case TOGGLE_ACTION_ENABLE: wantAlwaysOnTop = true; break;
+        case TOGGLE_ACTION_DISABLE: wantAlwaysOnTop = false; break;
+    }
+
+    if (wantAlwaysOnTop == window->m_alwaysOnTop)
+        return {};
+
+    const auto PMONITOR = window->m_monitor.lock();
+    if (!PMONITOR)
+        return actionError("Window has no monitor", eActionErrorLevel::WARNING, eActionErrorCode::INVALID_STATE);
+
+    if (!PMONITOR->m_activeWorkspace || !PMONITOR->m_activeWorkspace->m_space)
+        return actionError("Monitor has no active workspace", eActionErrorLevel::WARNING, eActionErrorCode::INVALID_STATE);
+
+    const auto LAYOUTTARGET = window->layoutTarget();
+    if (!LAYOUTTARGET)
+        return actionError("Window has no layout target", eActionErrorLevel::WARNING, eActionErrorCode::INVALID_STATE);
+
+    window->m_alwaysOnTop = wantAlwaysOnTop;
+    window->updateFullscreenInputState();
+    *window->alpha(Desktop::View::WINDOW_ALPHA_FULLSCREEN) = window->isBlockedByFullscreen() ? 0.F : 1.F;
+
+    window->m_ruleApplicator->propertiesChanged(Desktop::Rule::RULE_PROP_ALWAYS_ON_TOP);
+
+    const auto PWORKSPACE = window->m_workspace;
+    PWORKSPACE->m_lastFocusedWindow =
+        Desktop::viewState()->hitTest().windowAt(g_pInputManager->getMouseCoordsInternal(), Desktop::View::RESERVED_EXTENTS | Desktop::View::INPUT_EXTENTS);
+
+    IPC::Socket2::sock()->postEvent({.event = "always_on_top", .data = std::format("{:x},{}", rc<uintptr_t>(window.get()), sc<int>(window->m_alwaysOnTop))});
+    Event::bus()->m_events.window.alwaysOnTop.emit(window);
 
     g_pHyprRenderer->damageWindow(window, true);
 

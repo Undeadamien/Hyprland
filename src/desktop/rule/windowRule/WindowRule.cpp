@@ -8,6 +8,7 @@
 #include "../../../desktop/state/FocusState.hpp"
 #include "../../../protocols/types/ContentType.hpp"
 #include "../../../config/shared/parserUtils/ParserUtils.hpp"
+#include "desktop/rule/Rule.hpp"
 #include "desktop/rule/windowRule/WindowRuleEffectContainer.hpp"
 
 #include <hyprutils/string/Numeric.hpp>
@@ -229,6 +230,7 @@ static std::expected<WindowRuleEffectValue, std::string> parseWindowRuleEffect(C
         case WINDOW_RULE_EFFECT_PSEUDO:
         case WINDOW_RULE_EFFECT_NOINITIALFOCUS:
         case WINDOW_RULE_EFFECT_PIN:
+        case WINDOW_RULE_EFFECT_ALWAYS_ON_TOP:
         case WINDOW_RULE_EFFECT_PERSISTENT_SIZE:
         case WINDOW_RULE_EFFECT_ALLOWS_INPUT:
         case WINDOW_RULE_EFFECT_DIM_AROUND:
@@ -419,6 +421,10 @@ bool CWindowRule::matches(PHLWINDOW w, bool allowEnvLookup) {
                 break;
             case RULE_PROP_PINNED:
                 if (!engine->match(w->m_pinned))
+                    return false;
+                break;
+            case RULE_PROP_ALWAYS_ON_TOP:
+                if (!engine->match(w->m_alwaysOnTop))
                     return false;
                 break;
             case RULE_PROP_FOCUS:

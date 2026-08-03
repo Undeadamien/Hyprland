@@ -456,6 +456,10 @@ CWindowRuleApplicator::SRuleResult CWindowRuleApplicator::applyStaticRule(const 
                 static_.pin = std::get<bool>(value);
                 break;
             }
+            case WINDOW_RULE_EFFECT_ALWAYS_ON_TOP: {
+                static_.alwaysOnTop = std::get<bool>(value);
+                break;
+            }
             case WINDOW_RULE_EFFECT_GROUP: {
                 static_.group = std::get<std::string>(value);
                 break;

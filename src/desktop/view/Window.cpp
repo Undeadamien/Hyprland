@@ -953,7 +953,7 @@ bool CWindow::isAllowedOverFullscreen() const {
     if (!m_workspace)
         return false;
 
-    if (m_self == Fullscreen::controller()->getFullscreenWindow(m_workspace, true) || m_pinned || m_allowedOverFullscreen)
+    if (m_self == Fullscreen::controller()->getFullscreenWindow(m_workspace, true) || m_pinned || m_alwaysOnTop || m_allowedOverFullscreen)
         return true;
 
     const auto FSWINDOW = Fullscreen::controller()->getFullscreenWindow(m_workspace);
@@ -2192,6 +2192,7 @@ void CWindow::mapWindow() {
         m_target->setPseudo(m_ruleApplicator->static_.pseudo.value_or(m_target->isPseudo()));
         m_noInitialFocus = m_ruleApplicator->static_.noInitialFocus.value_or(m_noInitialFocus);
         m_pinned         = m_ruleApplicator->static_.pin.value_or(m_pinned);
+        m_alwaysOnTop    = m_ruleApplicator->static_.alwaysOnTop.value_or(m_alwaysOnTop);
 
         if (m_ruleApplicator->static_.fullscreenStateClient || m_ruleApplicator->static_.fullscreenStateInternal) {
             requestedFSState = Fullscreen::SFullscreenMode{

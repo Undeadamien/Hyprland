@@ -86,6 +86,7 @@ namespace Event {
                 Event<PHLWINDOW>                        title;
                 Event<PHLWINDOW>                        class_;
                 Event<PHLWINDOW>                        pin;
+                Event<PHLWINDOW>                        alwaysOnTop;
                 Event<PHLWINDOW>                        fullscreen;
                 Event<PHLWINDOW>                        floating;
                 Event<PHLWINDOW>                        updateRules;

@@ -46,6 +46,7 @@ namespace Desktop::Rule {
             std::optional<bool>                  maximize;
             std::optional<bool>                  pseudo;
             std::optional<bool>                  pin;
+            std::optional<bool>                  alwaysOnTop;
             std::optional<bool>                  noInitialFocus;
             std::optional<bool>                  center;
 

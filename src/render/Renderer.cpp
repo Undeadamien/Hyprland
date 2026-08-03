@@ -505,7 +505,7 @@ void IHyprRenderer::renderWorkspaceWindows(PHLMONITOR pMonitor, PHLWORKSPACE pWo
         if (!w)
             continue;
 
-        if (!w->m_isFloating || w->m_pinned)
+        if (!w->m_isFloating || w->m_pinned || w->m_alwaysOnTop)
             continue;
 
         // some things may force us to ignore the special/not special disparity
@@ -518,6 +518,19 @@ void IHyprRenderer::renderWorkspaceWindows(PHLMONITOR pMonitor, PHLWORKSPACE pWo
             continue; // special on another are rendered as a part of the base pass
 
         // render the bad boy
+        renderWindow(w.lock(), pMonitor, time, true, RENDER_PASS_ALL);
+    }
+
+    for (auto& w : windows) {
+        if (!w->m_isFloating || !w->m_alwaysOnTop)
+            continue;
+
+        const bool IGNORE_SPECIAL_CHECK = w->m_monitorMovedFrom != -1 && (w->m_workspace && !w->m_workspace->isVisible());
+        if (!IGNORE_SPECIAL_CHECK && pWorkspace->m_isSpecialWorkspace != w->onSpecialWorkspace())
+            continue;
+        if (pWorkspace->m_isSpecialWorkspace && w->m_monitor != pWorkspace->m_monitor)
+            continue;
+
         renderWindow(w.lock(), pMonitor, time, true, RENDER_PASS_ALL);
     }
     renderFadeouts(pMonitor, Desktop::FADEOUT_PLANE_WINDOW_FLOATING, pWorkspace);

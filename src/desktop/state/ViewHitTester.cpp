@@ -70,6 +70,27 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
             }
         }
     }
+    if (properties & ALLOW_FLOATING) {
+        for (auto const& w : WINDOWS | std::views::reverse) {
+            if (ONLY_PRIORITY && !w->priorityFocus())
+                continue;
+
+            if (w->m_isFloating && w->m_isMapped && w->acceptsInput() && !w->m_X11ShouldntFocus && w->m_alwaysOnTop && !w->m_ruleApplicator->noFocus().valueOrDefault() &&
+                w != ignoreWindow && !isShadowedByModal(w)) {
+                const auto BB  = w->getWindowBoxUnified(properties);
+                CBox       box = BB.copy().expand(!w->isX11OverrideRedirect() ? BORDER_GRAB_AREA : 0);
+                if (HITBOX_SHRINK > 0 && w != LASTFOCUSED)
+                    box = box.copy().expand(-HITBOX_SHRINK);
+                if (box.containsPoint(pos))
+                    return w;
+
+                if (!w->m_isX11) {
+                    if (w->hasPopupAt(pos))
+                        return w;
+                }
+            }
+        }
+    }
 
     auto windowForWorkspace = [&](bool special) -> PHLWINDOW {
         auto floating = [&](bool aboveFullscreen) -> PHLWINDOW {

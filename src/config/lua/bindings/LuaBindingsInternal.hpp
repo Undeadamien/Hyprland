@@ -55,6 +55,7 @@ namespace Config::Lua::Bindings::Internal {
         {"pseudo", []() -> ILuaConfigValue* { return new CLuaConfigBool(false); }, WE::WINDOW_RULE_EFFECT_PSEUDO},
         {"no_initial_focus", []() -> ILuaConfigValue* { return new CLuaConfigBool(false); }, WE::WINDOW_RULE_EFFECT_NOINITIALFOCUS},
         {"pin", []() -> ILuaConfigValue* { return new CLuaConfigBool(false); }, WE::WINDOW_RULE_EFFECT_PIN},
+        {"always_on_top", []() -> ILuaConfigValue* { return new CLuaConfigBool(false); }, WE::WINDOW_RULE_EFFECT_ALWAYS_ON_TOP},
         {"fullscreen_state", []() -> ILuaConfigValue* { return new CLuaConfigString(STRVAL_EMPTY); }, WE::WINDOW_RULE_EFFECT_FULLSCREENSTATE},
         {"move", []() -> ILuaConfigValue* { return new CLuaConfigExpressionVec2(); }, WE::WINDOW_RULE_EFFECT_MOVE},
         {"size", []() -> ILuaConfigValue* { return new CLuaConfigExpressionVec2(); }, WE::WINDOW_RULE_EFFECT_SIZE},

@@ -218,6 +218,9 @@ namespace Desktop::View {
         // For pinned (sticky) windows
         bool m_pinned = false;
 
+        // For pinned (non-sticky) windows
+        bool m_alwaysOnTop = false;
+
         // For preserving pinned state when fullscreening a pinned window
         bool m_pinFullscreened = false;
 
