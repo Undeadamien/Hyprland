@@ -24,7 +24,6 @@ static const std::vector<std::string> EFFECT_STRINGS = {
     "workspace",              //
     "no_initial_focus",       //
     "pin",                    //
-    "always_on_top",          //
     "group",                  //
     "suppress_event",         //
     "content",                //
@@ -70,6 +69,7 @@ static const std::vector<std::string> EFFECT_STRINGS = {
     "stay_focused",           //
     "confine_pointer",        //
     "no_xdg_drags",           //
+    "always_on_top",          //
     "__internal_last_static", //
 };
 

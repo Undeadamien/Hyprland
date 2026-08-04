@@ -73,9 +73,7 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
 
     auto windowForWorkspace = [&](bool special) -> PHLWINDOW {
         auto floating = [&](bool aboveFullscreen) -> PHLWINDOW {
-            auto hitTest = [&](PHLWINDOW w, bool onlyAlwaysOnTop) -> PHLWINDOW {
-                if (onlyAlwaysOnTop != w->m_alwaysOnTop)
-                    return nullptr;
+            auto hitTest = [&](PHLWINDOW w) -> PHLWINDOW {
                 if (special && !w->onSpecialWorkspace()) // because special floating may creep up into regular
                     return nullptr;
                 if (!w->m_workspace)
@@ -123,18 +121,21 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
                 return nullptr;
             };
 
-            // always-on-top windows are above other floating windows
+            // always-on-top windows are above other floating windows, even if they're lower in the z-order stack.
+            PHLWINDOW normalHit = nullptr;
             for (auto const& w : WINDOWS | std::views::reverse) {
-                if (const auto r = hitTest(w, true); r)
+                const auto r = hitTest(w);
+                if (!r)
+                    continue;
+
+                if (w->m_alwaysOnTop)
                     return r;
+
+                if (!normalHit)
+                    normalHit = r;
             }
 
-            for (auto const& w : WINDOWS | std::views::reverse) {
-                if (const auto r = hitTest(w, false); r)
-                    return r;
-            }
-
-            return nullptr;
+            return normalHit;
         };
 
         if (properties & ALLOW_FLOATING) {

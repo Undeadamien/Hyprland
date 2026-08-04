@@ -106,6 +106,7 @@ CLuaEventHandler::CLuaEventHandler(lua_State* L) : m_lua(L) {
     m_listeners.push_back(bus()->m_events.window.title.listen([this](PHLWINDOW w) { dispatch("window.title", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
     m_listeners.push_back(bus()->m_events.window.class_.listen([this](PHLWINDOW w) { dispatch("window.class", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
     m_listeners.push_back(bus()->m_events.window.pin.listen([this](PHLWINDOW w) { dispatch("window.pin", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
+    m_listeners.push_back(bus()->m_events.window.alwaysOnTop.listen([this](PHLWINDOW w) { dispatch("window.always_on_top", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
     m_listeners.push_back(bus()->m_events.window.fullscreen.listen([this](PHLWINDOW w) { dispatch("window.fullscreen", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
     m_listeners.push_back(bus()->m_events.window.updateRules.listen([this](PHLWINDOW w) { dispatch("window.update_rules", 1, [&](lua_State* L) { CLuaWindow::push(L, w); }); }));
     m_listeners.push_back(bus()->m_events.window.moveToWorkspace.listen([this](PHLWINDOW w, PHLWORKSPACE ws) {

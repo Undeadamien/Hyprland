@@ -627,6 +627,45 @@ TEST_CASE(alwaysOnTopRulePersistsOnFloat) {
     }
 }
 
+TEST_CASE(alwaysOnTopWinsHitTestOverLowerAndHigherZOrder) {
+    OK(getFromSocket("/eval hl.config({ input = { follow_mouse = 2 } })"));
+    OK(getFromSocket("/eval hl.config({ input = { float_switch_override_focus = 0 } })"));
+
+    SPAWN_KITTY("a");
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 500, y = 300 })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 400, y = 400 })"));
+
+    SPAWN_KITTY("b");
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 500, y = 300 })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 400, y = 400 })"));
+
+    // Without always-on-top, the higher-z-order window (b) wins clicks at the overlap.
+    OK(getFromSocket("/dispatch hl.dsp.cursor.move({ x = 700, y = 500 })"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 1)"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 0)"));
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: b");
+
+    // always-on-top wins the hit test regardless of z-order.
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'enable', window = 'class:a' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:b' })"));
+
+    OK(getFromSocket("/dispatch hl.dsp.cursor.move({ x = 700, y = 500 })"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 1)"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 0)"));
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: a");
+
+    // After disabling, normal stacking wins again.
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'disable', window = 'class:a' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:b' })"));
+
+    OK(getFromSocket("/dispatch hl.dsp.cursor.move({ x = 700, y = 500 })"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 1)"));
+    OK(getFromSocket("/eval hl.plugin.test.click(272, 0)"));
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: b");
+}
+
 TEST_CASE(windowruleWorkspaceEmpty) {
     OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_A' }, workspace = 'empty' })"));
     OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_B' }, workspace = 'emptyn' })"));
