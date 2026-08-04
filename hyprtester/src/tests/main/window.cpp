@@ -556,18 +556,18 @@ TEST_CASE(alwaysOnTopFloatingWindow) {
         EXPECT(str.contains("alwaysOnTop: 1"), true);
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'toggle', window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'disable', window = 'class:kitty' })"));
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT(str.contains("alwaysOnTop: 0"), true);
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'disable', window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'toggle', window = 'class:kitty' })"));
 
     {
         auto str = getFromSocket("/activewindow");
-        EXPECT(str.contains("alwaysOnTop: 0"), true);
+        EXPECT(str.contains("alwaysOnTop: 1"), true);
     }
 }
 
