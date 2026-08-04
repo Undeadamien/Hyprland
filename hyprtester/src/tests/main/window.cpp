@@ -571,6 +571,17 @@ TEST_CASE(alwaysOnTopFloatingWindow) {
     }
 }
 
+TEST_CASE(alwaysOnTopRequiresFloating) {
+    SPAWN_KITTY("kitty");
+
+    NOK(getFromSocket("/dispatch hl.dsp.window.always_on_top({ action = 'enable', window = 'class:kitty' })"));
+
+    {
+        auto str = getFromSocket("/activewindow");
+        EXPECT(str.contains("alwaysOnTop: 0"), true);
+    }
+}
+
 TEST_CASE(alwaysOnTopWindowRule) {
     OK(getFromSocket("/eval hl.window_rule({ match = { class = 'kitty_A' }, float = true, always_on_top = true })"));
 

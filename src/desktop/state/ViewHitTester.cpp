@@ -70,39 +70,18 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
             }
         }
     }
-    if (properties & ALLOW_FLOATING) {
-        for (auto const& w : WINDOWS | std::views::reverse) {
-            if (ONLY_PRIORITY && !w->priorityFocus())
-                continue;
-
-            if (w->m_isFloating && w->m_isMapped && w->m_workspace && w->m_workspace->isVisible() && w->acceptsInput() && !w->m_X11ShouldntFocus && w->m_alwaysOnTop &&
-                !w->m_ruleApplicator->noFocus().valueOrDefault() && w != ignoreWindow && !isShadowedByModal(w)) {
-                const auto BB  = w->getWindowBoxUnified(properties);
-                CBox       box = BB.copy().expand(!w->isX11OverrideRedirect() ? BORDER_GRAB_AREA : 0);
-                if (HITBOX_SHRINK > 0 && w != LASTFOCUSED)
-                    box = box.copy().expand(-HITBOX_SHRINK);
-                if (box.containsPoint(pos))
-                    return w;
-
-                if (!w->m_isX11) {
-                    if (w->hasPopupAt(pos))
-                        return w;
-                }
-            }
-        }
-    }
 
     auto windowForWorkspace = [&](bool special) -> PHLWINDOW {
         auto floating = [&](bool aboveFullscreen) -> PHLWINDOW {
-            for (auto const& w : WINDOWS | std::views::reverse) {
+            auto hitTest = [&](PHLWINDOW w, bool onlyAlwaysOnTop) -> PHLWINDOW {
+                if (onlyAlwaysOnTop != w->m_alwaysOnTop)
+                    return nullptr;
                 if (special && !w->onSpecialWorkspace()) // because special floating may creep up into regular
-                    continue;
-
+                    return nullptr;
                 if (!w->m_workspace)
-                    continue;
-
+                    return nullptr;
                 if (ONLY_PRIORITY && !w->priorityFocus())
-                    continue;
+                    return nullptr;
 
                 const auto PWINDOWMONITOR = w->m_monitor.lock();
 
@@ -111,34 +90,48 @@ PHLWINDOW CViewHitTester::windowAt(const Vector2D& pos, uint16_t properties, PHL
                     const auto BB = w->getWindowBoxUnified(properties);
                     if (BB.x >= PWINDOWMONITOR->m_position.x && BB.y >= PWINDOWMONITOR->m_position.y &&
                         BB.x + BB.width <= PWINDOWMONITOR->m_position.x + PWINDOWMONITOR->m_size.x && BB.y + BB.height <= PWINDOWMONITOR->m_position.y + PWINDOWMONITOR->m_size.y)
-                        continue;
+                        return nullptr;
                 }
 
-                if (w->m_isFloating && w->m_isMapped && w->m_workspace->isVisible() && w->acceptsInput() && !w->m_pinned && !w->m_ruleApplicator->noFocus().valueOrDefault() &&
-                    w != ignoreWindow && (!aboveFullscreen || w->isAllowedOverFullscreen()) && !isShadowedByModal(w)) {
-                    // OR windows should add focus to parent
-                    if (w->m_X11ShouldntFocus && !w->isX11OverrideRedirect())
-                        continue;
+                if (!(w->m_isFloating && w->m_isMapped && w->m_workspace->isVisible() && w->acceptsInput() && !w->m_pinned && !w->m_ruleApplicator->noFocus().valueOrDefault() &&
+                      w != ignoreWindow && (!aboveFullscreen || w->isAllowedOverFullscreen()) && !isShadowedByModal(w)))
+                    return nullptr;
 
-                    const auto BB  = w->getWindowBoxUnified(properties);
-                    CBox       box = BB.copy().expand(!w->isX11OverrideRedirect() ? BORDER_GRAB_AREA : 0);
-                    if (HITBOX_SHRINK > 0 && w != LASTFOCUSED)
-                        box = box.copy().expand(-HITBOX_SHRINK);
-                    if (box.containsPoint(pos)) {
-                        if (w->m_isX11 && w->isX11OverrideRedirect() && !w->m_xwaylandSurface->wantsFocus()) {
-                            // Override Redirect
-                            return focusState()->window(); // we kinda trick everything here.
-                            // TODO: this is wrong, we should focus the parent, but idk how to get it considering it's nullptr in most cases.
-                        }
+                // OR windows should add focus to parent
+                if (w->m_X11ShouldntFocus && !w->isX11OverrideRedirect())
+                    return nullptr;
 
+                const auto BB  = w->getWindowBoxUnified(properties);
+                CBox       box = BB.copy().expand(!w->isX11OverrideRedirect() ? BORDER_GRAB_AREA : 0);
+                if (HITBOX_SHRINK > 0 && w != LASTFOCUSED)
+                    box = box.copy().expand(-HITBOX_SHRINK);
+                if (box.containsPoint(pos)) {
+                    if (w->m_isX11 && w->isX11OverrideRedirect() && !w->m_xwaylandSurface->wantsFocus()) {
+                        // Override Redirect
+                        return focusState()->window(); // we kinda trick everything here.
+                        // TODO: this is wrong, we should focus the parent, but idk how to get it considering it's nullptr in most cases.
+                    }
+
+                    return w;
+                }
+
+                if (!w->m_isX11) {
+                    if (w->hasPopupAt(pos))
                         return w;
-                    }
-
-                    if (!w->m_isX11) {
-                        if (w->hasPopupAt(pos))
-                            return w;
-                    }
                 }
+
+                return nullptr;
+            };
+
+            // always-on-top windows are above other floating windows
+            for (auto const& w : WINDOWS | std::views::reverse) {
+                if (const auto r = hitTest(w, true); r)
+                    return r;
+            }
+
+            for (auto const& w : WINDOWS | std::views::reverse) {
+                if (const auto r = hitTest(w, false); r)
+                    return r;
             }
 
             return nullptr;

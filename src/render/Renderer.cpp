@@ -524,7 +524,7 @@ void IHyprRenderer::renderWorkspaceWindows(PHLMONITOR pMonitor, PHLWORKSPACE pWo
     for (auto& w : windows) {
         if (!w)
             continue;
-        if (!(w->m_isFloating && w->m_alwaysOnTop))
+        if (!(w->m_isFloating && w->m_alwaysOnTop && !w->m_pinned))
             continue;
 
         const bool IGNORE_SPECIAL_CHECK = w->m_monitorMovedFrom != -1 && (w->m_workspace && !w->m_workspace->isVisible());

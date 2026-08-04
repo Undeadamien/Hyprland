@@ -218,7 +218,7 @@ namespace Desktop::View {
         // For pinned (sticky) windows
         bool m_pinned = false;
 
-        // For pinned (non-sticky) windows
+        // For floating windows that render above other windows of the same workspace. Does not apply to tiled windows.
         bool m_alwaysOnTop = false;
 
         // For preserving pinned state when fullscreening a pinned window

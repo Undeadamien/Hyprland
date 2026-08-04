@@ -31,7 +31,7 @@
 #include "../../../state/MonitorState.hpp"
 #include "../../../state/WorkspacePlacementController.hpp"
 #include "../../../state/WorkspaceState.hpp"
-#include "desktop/rule/Rule.hpp"
+#include "../../../desktop/rule/Rule.hpp"
 
 #include <numbers>
 #include <utility>
