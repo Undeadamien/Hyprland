@@ -86,6 +86,7 @@ namespace Desktop::View {
         WINDOW_STATE_PINNED           = (1 << 0),
         WINDOW_STATE_NO_INITIAL_FOCUS = (1 << 1),
         WINDOW_STATE_FIRST_MAP        = (1 << 2),
+        WINDOW_STATE_ALWAYS_ON_TOP    = (1 << 3),
     };
 
     using enum eWindowState;

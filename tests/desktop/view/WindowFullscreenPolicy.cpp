@@ -15,6 +15,7 @@ TEST(WindowFullscreenPolicy, DefaultAndEffectiveStacking) {
     EXPECT_FALSE(policy.effectiveAllowedOverFullscreen({}));
     EXPECT_TRUE(policy.effectiveAllowedOverFullscreen({.isFullscreenWindow = true}));
     EXPECT_TRUE(policy.effectiveAllowedOverFullscreen({.pinned = true}));
+    EXPECT_TRUE(policy.effectiveAllowedOverFullscreen({.alwaysOnTop = true}));
     EXPECT_TRUE(policy.effectiveAllowedOverFullscreen({.groupedWithFullscreen = true}));
 }
 

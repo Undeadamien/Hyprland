@@ -9,6 +9,7 @@ namespace Desktop::View {
     struct SFullscreenStackingContext {
         bool isFullscreenWindow    = false;
         bool pinned                = false;
+        bool alwaysOnTop           = false;
         bool groupedWithFullscreen = false;
     };
 

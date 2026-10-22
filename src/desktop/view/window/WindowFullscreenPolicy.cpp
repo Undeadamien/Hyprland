@@ -11,7 +11,7 @@ void CWindowFullscreenPolicy::setAllowedOverFullscreen(bool allowed) {
 }
 
 bool CWindowFullscreenPolicy::effectiveAllowedOverFullscreen(const SFullscreenStackingContext& context) const {
-    return context.isFullscreenWindow || context.pinned || m_allowedOverFullscreen || context.groupedWithFullscreen;
+    return context.isFullscreenWindow || context.pinned || context.alwaysOnTop || m_allowedOverFullscreen || context.groupedWithFullscreen;
 }
 
 const SFullscreenRequestSuppression& CWindowFullscreenPolicy::requestSuppression() const {

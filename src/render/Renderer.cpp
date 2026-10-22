@@ -548,11 +548,33 @@ void IHyprRenderer::renderWorkspaceWindows(CRenderContext& ctx, PHLMONITOR pMoni
     }
 
     // floating on top
+    // First pass: regular floating (non-pinned, non-always-on-top)
     for (auto& w : windows) {
         if (!w)
             continue;
 
-        if (!w->isFloating() || (w->m_state & WINDOW_STATE_PINNED))
+        if (!w->isFloating() || (w->m_state & WINDOW_STATE_PINNED) || (w->m_state & WINDOW_STATE_ALWAYS_ON_TOP))
+            continue;
+
+        // some things may force us to ignore the special/not special disparity
+        const bool IGNORE_SPECIAL_CHECK = w->presentation().movingFromMonitor() && (w->m_workspace && !w->m_workspace->visible());
+
+        if (!IGNORE_SPECIAL_CHECK && SPECIAL != w->onSpecialWorkspace())
+            continue;
+
+        if (SPECIAL && w->m_monitor != pWorkspace->m_monitor)
+            continue; // special on another are rendered as a part of the base pass
+
+        // render the bad boy
+        renderWindow(ctx, w.lock(), pMonitor, w->presentation().renderPresentation(mode), time, true, RENDER_PASS_ALL);
+    }
+
+    // Second pass: always-on-top floating windows (above regular floating)
+    for (auto& w : windows) {
+        if (!w)
+            continue;
+
+        if (!w->isFloating() || (w->m_state & WINDOW_STATE_PINNED) || !(w->m_state & WINDOW_STATE_ALWAYS_ON_TOP))
             continue;
 
         // some things may force us to ignore the special/not special disparity

@@ -48,6 +48,52 @@ void CWindowState::lower(PHLWINDOW w) {
     moveToZ(w, false);
 }
 
+bool CWindowState::isAlwaysOnTop(PHLWINDOW w) {
+    return w && (w->m_state & View::WINDOW_STATE_ALWAYS_ON_TOP);
+}
+
+std::vector<PHLWINDOW>::iterator CWindowState::firstAlwaysOnTop() {
+    return std::ranges::find_if(m_windows, [](PHLWINDOW w) { return CWindowState::isAlwaysOnTop(w); });
+}
+
+std::vector<PHLWINDOW>::const_iterator CWindowState::firstAlwaysOnTop() const {
+    return std::ranges::find_if(m_windows, [](PHLWINDOW w) { return CWindowState::isAlwaysOnTop(w); });
+}
+
+void CWindowState::moveWindowToPartition(PHLWINDOW w, bool top) {
+    if (!w || m_windows.empty())
+        return;
+
+    auto it = std::ranges::find(m_windows, w);
+    if (it == m_windows.end())
+        return;
+
+    const bool wIsAOT = isAlwaysOnTop(w);
+    m_windows.erase(it);
+
+    auto aotBegin = firstAlwaysOnTop();
+    std::vector<PHLWINDOW>::iterator insertPos;
+
+    if (top) {
+        if (wIsAOT) {
+            insertPos = m_windows.end();
+        } else {
+            insertPos = (aotBegin != m_windows.end()) ? aotBegin : m_windows.end();
+        }
+    } else {
+        if (wIsAOT) {
+            insertPos = (aotBegin != m_windows.end()) ? aotBegin : m_windows.end();
+        } else {
+            insertPos = m_windows.begin();
+        }
+    }
+
+    m_windows.insert(insertPos, w);
+
+    if (w->mapped())
+        g_pHyprRenderer->damageMonitor(w->m_monitor.lock());
+}
+
 void CWindowState::moveToZ(PHLWINDOW w, bool top) {
     if (!View::validMapped(w) || m_windows.empty())
         return;
@@ -56,28 +102,40 @@ void CWindowState::moveToZ(PHLWINDOW w, bool top) {
     w->updateFullscreenInputState();
     *w->presentation().alpha(View::WINDOW_ALPHA_FULLSCREEN) = w->isBlockedByFullscreen() ? 0.F : 1.F;
 
-    if (w == (top ? m_windows.back() : m_windows.front()))
-        return;
+    const bool wIsAOT = isAlwaysOnTop(w);
+    const auto aotBegin = firstAlwaysOnTop();
+    const bool aotExists = aotBegin != m_windows.end();
 
-    auto moveSingleToZ = [&](PHLWINDOW pw) -> void {
-        if (top)
-            moveToTop(pw);
-        else
-            moveToBottom(pw);
-
-        if (pw->mapped())
-            g_pHyprRenderer->damageMonitor(pw->m_monitor.lock());
-    };
+    // Check if already at correct boundary
+    if (top) {
+        if (wIsAOT) {
+            if (w == m_windows.back())
+                return;
+        } else {
+            if (aotExists && w == std::prev(aotBegin))
+                return;
+            if (!aotExists && w == m_windows.back())
+                return;
+        }
+    } else {
+        if (wIsAOT) {
+            if (aotExists && w == *aotBegin)
+                return;
+        } else {
+            if (w == m_windows.front())
+                return;
+        }
+    }
 
     if (!w->backend().isX11()) {
-        moveSingleToZ(w);
+        moveWindowToPartition(w, top);
         return;
     }
 
-    // move X11 transient stack
+    // X11 transient stack
     std::vector<PHLWINDOW> toMove;
 
-    auto                   collectX11Stack = [&](PHLWINDOW pw, auto&& collectX11Stack) -> void {
+    auto collectX11Stack = [&](PHLWINDOW pw, auto&& collectX11Stack) -> void {
         if (top)
             toMove.emplace_back(pw);
         else
@@ -91,35 +149,17 @@ void CWindowState::moveToZ(PHLWINDOW w, bool top) {
     };
 
     collectX11Stack(w, collectX11Stack);
-    for (auto const& it : toMove) {
-        moveSingleToZ(it);
+    for (auto const& pw : toMove) {
+        moveWindowToPartition(pw, top);
     }
 }
 
 void CWindowState::moveToTop(PHLWINDOW w) {
-    if (!w || m_windows.empty() || m_windows.back() == w)
-        return;
-
-    for (auto it = m_windows.begin(); it != m_windows.end(); ++it) {
-        if (*it != w)
-            continue;
-
-        std::rotate(it, it + 1, m_windows.end());
-        return;
-    }
+    moveWindowToPartition(w, true);
 }
 
 void CWindowState::moveToBottom(PHLWINDOW w) {
-    if (!w || m_windows.empty() || m_windows.front() == w)
-        return;
-
-    for (auto it = m_windows.rbegin(); it != m_windows.rend(); ++it) {
-        if (*it != w)
-            continue;
-
-        std::rotate(it, it + 1, m_windows.rend());
-        return;
-    }
+    moveWindowToPartition(w, false);
 }
 
 void CWindowState::clear() {

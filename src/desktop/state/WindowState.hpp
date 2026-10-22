@@ -33,6 +33,10 @@ namespace Desktop {
         void                   moveToTop(PHLWINDOW w);
         void                   moveToBottom(PHLWINDOW w);
         void                   moveToZ(PHLWINDOW w, bool top);
+        void                   moveWindowToPartition(PHLWINDOW w, bool top);
+        static bool            isAlwaysOnTop(PHLWINDOW w);
+        std::vector<PHLWINDOW>::iterator       firstAlwaysOnTop();
+        std::vector<PHLWINDOW>::const_iterator firstAlwaysOnTop() const;
 
         struct {
             CHyprSignalListener viewCreate;

@@ -934,6 +934,8 @@ ActionResult Actions::setProp(const std::string& PROP, const std::string& VAL, s
             parsePropTrivial(PWINDOW->m_ruleApplicator->persistentSize(), VAL);
         else if (PROP == "stay_focused")
             parsePropTrivial(PWINDOW->m_ruleApplicator->stayFocused(), VAL);
+        else if (PROP == "always_on_top")
+            parsePropTrivial(PWINDOW->m_ruleApplicator->alwaysOnTop(), VAL);
         else if (PROP == "idle_inhibit")
             parsePropTrivial(PWINDOW->m_ruleApplicator->idleInhibitMode(), VAL);
         else if (PROP == "border_size")
